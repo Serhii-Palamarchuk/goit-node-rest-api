@@ -8,6 +8,7 @@ import {
   updateStatusContact,
 } from "../controllers/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
+import authenticate from "../helpers/authenticate.js";
 import {
   createContactSchema,
   updateContactSchema,
@@ -101,6 +102,26 @@ const contactsRouter = express.Router();
  *   get:
  *     summary: Отримати всі контакти
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Номер сторінки для пагінації
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Кількість контактів на сторінці
+ *       - in: query
+ *         name: favorite
+ *         schema:
+ *           type: boolean
+ *         description: Фільтр по обраних контактах
  *     responses:
  *       200:
  *         description: Список всіх контактів
@@ -110,8 +131,14 @@ const contactsRouter = express.Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Contact'
+ *       401:
+ *         description: Не авторизовано
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", authenticate, getAllContacts);
 
 /**
  * @swagger
@@ -140,7 +167,7 @@ contactsRouter.get("/", getAllContacts);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", authenticate, getOneContact);
 
 /**
  * @swagger
@@ -169,7 +196,7 @@ contactsRouter.get("/:id", getOneContact);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", authenticate, deleteContact);
 
 /**
  * @swagger
@@ -197,7 +224,7 @@ contactsRouter.delete("/:id", deleteContact);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-contactsRouter.post("/", validateBody(createContactSchema), createContact);
+contactsRouter.post("/", authenticate, validateBody(createContactSchema), createContact);
 
 /**
  * @swagger
@@ -238,7 +265,7 @@ contactsRouter.post("/", validateBody(createContactSchema), createContact);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-contactsRouter.put("/:id", validateBody(updateContactSchema), updateContact);
+contactsRouter.put("/:id", authenticate, validateBody(updateContactSchema), updateContact);
 
 /**
  * @swagger
@@ -283,6 +310,7 @@ contactsRouter.put("/:id", validateBody(updateContactSchema), updateContact);
  */
 contactsRouter.patch(
   "/:contactId/favorite",
+  authenticate,
   validateBody(updateStatusSchema),
   updateStatusContact
 );
