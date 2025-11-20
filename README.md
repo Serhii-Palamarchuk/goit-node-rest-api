@@ -1,8 +1,18 @@
 # goit-node-rest-api
 
-REST API для роботи з колекцією контактів.
+Тема 6. PostgresSQL та Sequelize. Домашня робота
 
 ## Встановлення та запуск
+
+### Налаштування бази даних
+
+1. Створіть файл `.env` в корені проекту:
+```env
+DATABASE_URL=postgresql://user:password@host/database
+PORT=3000
+```
+
+2. Вкажіть URL вашої PostgreSQL бази даних у змінній `DATABASE_URL`
 
 ### Встановлення залежностей
 
@@ -185,6 +195,38 @@ Swagger UI надає інтерактивну документацію, де м
 }
 ```
 
+### 6. Оновити статус favorite контакту
+
+**PATCH** `/api/contacts/:contactId/favorite`
+
+**Параметри:**
+- `contactId` - ID контакту
+
+**Body:**
+```json
+{
+  "favorite": true
+}
+```
+
+**Відповідь (200):**
+```json
+{
+  "id": "1",
+  "name": "Allen Raymond",
+  "email": "nulla.ante@vestibul.co.uk",
+  "phone": "(992) 914-3792",
+  "favorite": true
+}
+```
+
+**Відповідь (404):**
+```json
+{
+  "message": "Not found"
+}
+```
+
 ## Тестування в Postman
 
 ### Створення колекції
@@ -231,6 +273,17 @@ Swagger UI надає інтерактивну документацію, де м
 - Метод: `DELETE`
 - URL: `{{baseUrl}}/api/contacts/AeHIrLTr6JkxGE6SN-0Rw`
 
+#### 6. Оновити статус favorite
+- Метод: `PATCH`
+- URL: `{{baseUrl}}/api/contacts/1/favorite`
+- Headers: `Content-Type: application/json`
+- Body (raw JSON):
+```json
+{
+  "favorite": true
+}
+```
+
 ## Структура проекту
 
 ```
@@ -238,16 +291,20 @@ goit-node-rest-api/
 ├── controllers/
 │   └── contactsControllers.js  # Контролери для обробки запитів
 ├── db/
-│   └── contacts.json           # База даних контактів
+│   ├── db.js                   # Підключення до PostgreSQL
+│   └── contacts.json           # Старі дані (не використовується)
 ├── helpers/
 │   ├── HttpError.js            # Функція для створення HTTP помилок
 │   └── validateBody.js         # Міддлвар для валідації body
+├── models/
+│   └── Contact.js              # Sequelize модель Contact
 ├── routes/
 │   └── contactsRouter.js       # Роути API
 ├── schemas/
 │   └── contactsSchemas.js      # Joi схеми валідації
 ├── services/
 │   └── contactsServices.js     # Бізнес-логіка роботи з контактами
+├── .env                        # Змінні оточення (не в git)
 ├── app.js                      # Точка входу додатку
 └── package.json                # Конфігурація проекту
 ```
@@ -256,8 +313,10 @@ goit-node-rest-api/
 
 - **Node.js** - середовище виконання JavaScript
 - **Express** - веб-фреймворк
+- **PostgreSQL** - реляційна база даних
+- **Sequelize** - ORM для роботи з базою даних
 - **Joi** - валідація даних
-- **nanoid** - генерація унікальних ID
+- **dotenv** - управління змінними оточення
 - **Morgan** - логування HTTP запитів
 - **CORS** - підтримка cross-origin запитів
 - **Swagger** - автоматична генерація API документації
@@ -265,6 +324,7 @@ goit-node-rest-api/
 ## Вимоги
 
 - Node.js версії LTS або новіше
+- PostgreSQL 12 або новіше
 - npm або yarn
 
 ## Автор

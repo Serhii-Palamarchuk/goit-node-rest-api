@@ -5,11 +5,13 @@ import {
   deleteContact,
   createContact,
   updateContact,
+  updateStatusContact,
 } from "../controllers/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import {
   createContactSchema,
   updateContactSchema,
+  updateStatusSchema,
 } from "../schemas/contactsSchemas.js";
 
 const contactsRouter = express.Router();
@@ -38,11 +40,16 @@ const contactsRouter = express.Router();
  *         phone:
  *           type: string
  *           description: Телефон контакту
+ *         favorite:
+ *           type: boolean
+ *           description: Статус обраного контакту
+ *           default: false
  *       example:
  *         id: AeHIrLTr6JkxGE6SN-0Rw
  *         name: Allen Raymond
  *         email: nulla.ante@vestibul.co.uk
  *         phone: (992) 914-3792
+ *         favorite: false
  *     ContactInput:
  *       type: object
  *       required:
@@ -232,5 +239,52 @@ contactsRouter.post("/", validateBody(createContactSchema), createContact);
  *               $ref: '#/components/schemas/Error'
  */
 contactsRouter.put("/:id", validateBody(updateContactSchema), updateContact);
+
+/**
+ * @swagger
+ * /api/contacts/{contactId}/favorite:
+ *   patch:
+ *     summary: Оновити статус favorite контакту
+ *     tags: [Contacts]
+ *     parameters:
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID контакту
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - favorite
+ *             properties:
+ *               favorite:
+ *                 type: boolean
+ *                 description: Статус обраного контакту
+ *             example:
+ *               favorite: true
+ *     responses:
+ *       200:
+ *         description: Статус контакту оновлено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Contact'
+ *       404:
+ *         description: Контакт не знайдено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+contactsRouter.patch(
+  "/:contactId/favorite",
+  validateBody(updateStatusSchema),
+  updateStatusContact
+);
 
 export default contactsRouter;
