@@ -146,6 +146,8 @@ contactsRouter.get("/", authenticate, getAllContacts);
  *   get:
  *     summary: Отримати контакт за ID
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -175,6 +177,8 @@ contactsRouter.get("/:id", authenticate, getOneContact);
  *   delete:
  *     summary: Видалити контакт
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -204,6 +208,8 @@ contactsRouter.delete("/:id", authenticate, deleteContact);
  *   post:
  *     summary: Створити новий контакт
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -232,6 +238,8 @@ contactsRouter.post("/", authenticate, validateBody(createContactSchema), create
  *   put:
  *     summary: Оновити контакт
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -273,6 +281,8 @@ contactsRouter.put("/:id", authenticate, validateBody(updateContactSchema), upda
  *   patch:
  *     summary: Оновити статус favorite контакту
  *     tags: [Contacts]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: contactId
