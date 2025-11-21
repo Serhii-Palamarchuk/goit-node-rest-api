@@ -1,6 +1,6 @@
 # goit-node-rest-api
 
-Домашнє завдання. Тема 7. Аутентифікація та авторизація
+Домашнє завдання. Тема 9. Робота з файлами та тестування додатків
 
 ## Встановлення та запуск
 
@@ -184,6 +184,37 @@ Authorization: Bearer <token>
 ```
 
 **Можливі значення subscription:** `starter`, `pro`, `business`
+
+#### 6. Оновлення аватара (Optional)
+
+**PATCH** `/api/auth/avatars`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body (multipart/form-data):**
+- `avatar` - файл зображення (JPEG, PNG, GIF, max 5MB)
+
+**Відповідь (200):**
+```json
+{
+  "avatarURL": "/avatars/123.jpg"
+}
+```
+
+**Відповідь (400):**
+```json
+{
+  "message": "File is required"
+}
+```
+
+**Примітка:** 
+- При реєстрації автоматично генерується gravatar
+- Завантажене зображення зберігається в `public/avatars/`
+- Доступ до аватара: `http://localhost:3000/avatars/{userId}.jpg`
 
 ---
 
@@ -546,10 +577,13 @@ goit-node-rest-api/
 ├── helpers/
 │   ├── authenticate.js         # Міддлвар перевірки JWT токенів
 │   ├── HttpError.js            # Функція для створення HTTP помилок
+│   ├── upload.js               # Конфігурація Multer для завантаження файлів
 │   └── validateBody.js         # Міддлвар для валідації body
 ├── models/
 │   ├── Contact.js              # Sequelize модель Contact з owner
-│   └── User.js                 # Sequelize модель User
+│   └── User.js                 # Sequelize модель User з avatarURL
+├── public/
+│   └── avatars/                # Папка для збереження аватарів
 ├── routes/
 │   ├── authRouter.js           # Роути автентифікації
 │   └── contactsRouter.js       # Роути API контактів (захищені)
@@ -559,6 +593,7 @@ goit-node-rest-api/
 ├── services/
 │   ├── authServices.js         # Бізнес-логіка автентифікації
 │   └── contactsServices.js     # Бізнес-логіка роботи з контактами
+├── temp/                       # Тимчасова папка для завантажених файлів
 ├── .env                        # Змінні оточення (не в git)
 ├── app.js                      # Точка входу додатку
 └── package.json                # Конфігурація проекту
@@ -572,6 +607,8 @@ goit-node-rest-api/
 - **Sequelize** - ORM для роботи з базою даних
 - **JWT (jsonwebtoken)** - автентифікація через токени
 - **bcryptjs** - хешування паролів
+- **Multer** - завантаження файлів
+- **Gravatar** - генерація аватарів
 - **Joi** - валідація даних
 - **dotenv** - управління змінними оточення
 - **Morgan** - логування HTTP запитів
@@ -579,6 +616,13 @@ goit-node-rest-api/
 - **Swagger** - автоматична генерація API документації
 
 ## Функціонал
+
+### ✅ Homework #5 - File Upload & Avatars
+- Завантаження та оновлення аватарів користувачів (Multer)
+- Генерація аватарів через Gravatar при реєстрації
+- Роздача статичних файлів з папки public
+- Валідація типу та розміру файлів (max 5MB, JPEG/PNG/GIF)
+- Унікальні імена файлів для кожного користувача
 
 ### ✅ Homework #4 - Authentication & Authorization
 - Реєстрація користувачів з хешуванням паролів (bcrypt)

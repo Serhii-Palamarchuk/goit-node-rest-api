@@ -1,5 +1,7 @@
 import * as authService from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
+import fs from "fs/promises";
+import path from "path";
 
 export const register = async (req, res, next) => {
   try {
@@ -14,6 +16,7 @@ export const register = async (req, res, next) => {
       user: {
         email: user.email,
         subscription: user.subscription,
+        avatarURL: user.avatarURL,
       },
     });
   } catch (error) {
@@ -35,6 +38,7 @@ export const login = async (req, res, next) => {
       user: {
         email: result.user.email,
         subscription: result.user.subscription,
+        avatarURL: result.user.avatarURL,
       },
     });
   } catch (error) {
@@ -58,11 +62,12 @@ export const logout = async (req, res, next) => {
 
 export const current = async (req, res, next) => {
   try {
-    const { email, subscription } = req.user;
+    const { email, subscription, avatarURL } = req.user;
 
     res.status(200).json({
       email,
       subscription,
+      avatarURL,
     });
   } catch (error) {
     next(error);
@@ -81,6 +86,36 @@ export const updateSubscription = async (req, res, next) => {
     res.status(200).json({
       email: user.email,
       subscription: user.subscription,
+      avatarURL: user.avatarURL,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw HttpError(400, "File is required");
+    }
+
+    const { path: tempPath, originalname } = req.file;
+    const ext = path.extname(originalname);
+    const filename = `${req.user.id}${ext}`;
+    const avatarsDir = path.resolve("public", "avatars");
+    const newPath = path.join(avatarsDir, filename);
+
+    await fs.rename(tempPath, newPath);
+
+    const avatarURL = `/avatars/${filename}`;
+    const user = await authService.updateAvatar(req.user.id, avatarURL);
+
+    if (!user) {
+      throw HttpError(401, "Not authorized");
+    }
+
+    res.status(200).json({
+      avatarURL: user.avatarURL,
     });
   } catch (error) {
     next(error);
