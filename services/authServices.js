@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
 import User from "../models/User.js";
+import sendEmail from "../helpers/sendEmail.js";
 
 async function register(email, password) {
   const existingUser = await User.findOne({ where: { email } });
@@ -11,11 +13,21 @@ async function register(email, password) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email, { s: "200", r: "pg", d: "mp" });
+  const verificationToken = nanoid();
   
   const user = await User.create({
     email,
     password: hashedPassword,
     avatarURL,
+    verificationToken,
+  });
+
+  // Відправка email з посиланням для верифікації
+  const verificationUrl = `${process.env.BASE_URL}/api/auth/verify/${verificationToken}`;
+  await sendEmail({
+    to: email,
+    subject: "Verify your email",
+    html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
   });
 
   return user;
@@ -25,6 +37,10 @@ async function login(email, password) {
   const user = await User.findOne({ where: { email } });
   if (!user) {
     return null;
+  }
+
+  if (!user.verify) {
+    return { error: "Email not verified" };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -71,4 +87,42 @@ async function updateAvatar(userId, avatarURL) {
   return user;
 }
 
-export { register, login, logout, updateSubscription, updateAvatar };
+async function verifyEmail(verificationToken) {
+  const user = await User.findOne({ where: { verificationToken } });
+  if (!user) {
+    return null;
+  }
+
+  await user.update({ verify: true, verificationToken: null });
+  return user;
+}
+
+async function resendVerificationEmail(email) {
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    return null;
+  }
+
+  if (user.verify) {
+    return { error: "Verification has already been passed" };
+  }
+
+  const verificationUrl = `${process.env.BASE_URL}/api/auth/verify/${user.verificationToken}`;
+  await sendEmail({
+    to: email,
+    subject: "Verify your email",
+    html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
+  });
+
+  return user;
+}
+
+export { 
+  register, 
+  login, 
+  logout, 
+  updateSubscription, 
+  updateAvatar, 
+  verifyEmail, 
+  resendVerificationEmail 
+};

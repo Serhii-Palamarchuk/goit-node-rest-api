@@ -1,21 +1,35 @@
 # goit-node-rest-api
 
-Домашнє завдання. Тема 9. Робота з файлами та тестування додатків
+Домашнє завдання. Тема 11. Email Verification & Websockets
 
 ## Встановлення та запуск
 
 ### Налаштування бази даних
 
-1. Створіть файл `.env` в корені проекту:
+1. Створіть файл `.env` в корені проєкту:
 ```env
 DATABASE_URL=postgresql://user:password@host/database
 PORT=3000
 JWT_SECRET=your-secret-key-min-32-characters
+
+# Email Configuration
+SMTP_HOST=smtp.ukr.net
+SMTP_PORT=465
+SMTP_USER=your-email@ukr.net
+SMTP_PASSWORD=your-app-password
+
+# Application URL
+BASE_URL=http://localhost:3000
 ```
 
 2. Вкажіть:
    - `DATABASE_URL` - URL вашої PostgreSQL бази даних
    - `JWT_SECRET` - секретний ключ для JWT токенів (мінімум 32 символи)
+   - `SMTP_HOST` - SMTP хост поштового сервісу
+   - `SMTP_PORT` - SMTP порт (465 для SSL)
+   - `SMTP_USER` - ваша поштова скринька
+   - `SMTP_PASSWORD` - пароль для додатків (згенерований на ukr.net)
+   - `BASE_URL` - базова URL вашого додатку
 
 ### Встановлення залежностей
 
@@ -614,6 +628,8 @@ goit-node-rest-api/
 - **bcryptjs** - хешування паролів
 - **Multer** - завантаження файлів
 - **Gravatar** - генерація аватарів
+- **Nodemailer** - відправка email
+- **nanoid** - генерація унікальних ідентифікаторів
 - **Joi** - валідація даних
 - **dotenv** - управління змінними оточення
 - **Morgan** - логування HTTP запитів
@@ -623,6 +639,15 @@ goit-node-rest-api/
 - **Supertest** - тестування HTTP запитів
 
 ## Функціонал
+
+### ✅ Homework #6 - Email Verification
+- Верифікація email користувача після реєстрації
+- Відправка email з посиланням для верифікації через Nodemailer
+- Генерація verificationToken через nanoid
+- Ендпоінт `GET /auth/verify/:verificationToken` для верифікації
+- Ендпоінт `POST /auth/verify` для повторної відправки email
+- Заборона логіну для неверифікованих користувачів
+- Інтеграція з ukr.net SMTP сервісом
 
 ### ✅ Homework #5 - File Upload & Avatars
 - Завантаження та оновлення аватарів користувачів (Multer)

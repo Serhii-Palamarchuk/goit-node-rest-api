@@ -33,6 +33,10 @@ export const login = async (req, res, next) => {
       throw HttpError(401, "Email or password is wrong");
     }
 
+    if (result.error) {
+      throw HttpError(401, result.error);
+    }
+
     res.status(200).json({
       token: result.token,
       user: {
@@ -116,6 +120,44 @@ export const updateAvatar = async (req, res, next) => {
 
     res.status(200).json({
       avatarURL: user.avatarURL,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await authService.verifyEmail(verificationToken);
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    res.status(200).json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const result = await authService.resendVerificationEmail(email);
+
+    if (!result) {
+      throw HttpError(404, "User not found");
+    }
+
+    if (result.error) {
+      throw HttpError(400, result.error);
+    }
+
+    res.status(200).json({
+      message: "Verification email sent",
     });
   } catch (error) {
     next(error);

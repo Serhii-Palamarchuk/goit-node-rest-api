@@ -6,13 +6,29 @@ import {
   current,
   updateSubscription,
   updateAvatar,
+  verifyEmail,
+  resendVerificationEmail,
 } from "../controllers/authControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import authenticate from "../helpers/authenticate.js";
 import upload from "../helpers/upload.js";
-import { registerSchema, loginSchema, updateSubscriptionSchema } from "../schemas/authSchemas.js";
+import { 
+  registerSchema, 
+  loginSchema, 
+  updateSubscriptionSchema,
+  emailSchema 
+} from "../schemas/authSchemas.js";
 
 const authRouter = express.Router();
+
+// Middlewares для валідації
+const validateRegister = validateBody(registerSchema);
+const validateLogin = validateBody(loginSchema);
+const validateSubscription = validateBody(updateSubscriptionSchema);
+const validateEmail = validateBody(emailSchema);
+
+// Middleware для завантаження аватара
+const uploadAvatar = upload.single("avatar");
 
 /**
  * @swagger
@@ -124,7 +140,7 @@ const authRouter = express.Router();
  *             example:
  *               message: Email in use
  */
-authRouter.post("/register", validateBody(registerSchema), register);
+authRouter.post("/register", validateRegister, register);
 
 /**
  * @swagger
@@ -160,7 +176,7 @@ authRouter.post("/register", validateBody(registerSchema), register);
  *             example:
  *               message: Email or password is wrong
  */
-authRouter.post("/login", validateBody(loginSchema), login);
+authRouter.post("/login", validateLogin, login);
 
 /**
  * @swagger
@@ -252,7 +268,7 @@ authRouter.get("/current", authenticate, current);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-authRouter.patch("/subscription", authenticate, validateBody(updateSubscriptionSchema), updateSubscription);
+authRouter.patch("/subscription", authenticate, validateSubscription, updateSubscription);
 
 /**
  * @swagger
@@ -299,6 +315,94 @@ authRouter.patch("/subscription", authenticate, validateBody(updateSubscriptionS
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-authRouter.patch("/avatars", authenticate, upload.single("avatar"), updateAvatar);
+authRouter.patch("/avatars", authenticate, uploadAvatar, updateAvatar);
+
+/**
+ * @swagger
+ * /api/auth/verify/{verificationToken}:
+ *   get:
+ *     summary: Верифікація email користувача
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: verificationToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Токен верифікації з email
+ *     responses:
+ *       200:
+ *         description: Верифікація успішна
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Verification successful
+ *       404:
+ *         description: Користувача не знайдено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: User not found
+ */
+authRouter.get("/verify/:verificationToken", verifyEmail);
+
+/**
+ * @swagger
+ * /api/auth/verify:
+ *   post:
+ *     summary: Повторна відправка email верифікації
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *           example:
+ *             email: example@example.com
+ *     responses:
+ *       200:
+ *         description: Email верифікації відправлено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Verification email sent
+ *       400:
+ *         description: Користувач вже верифікований або помилка валідації
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               alreadyVerified:
+ *                 value:
+ *                   message: Verification has already been passed
+ *               validationError:
+ *                 value:
+ *                   message: missing required field email
+ *       404:
+ *         description: Користувача не знайдено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+authRouter.post("/verify", validateEmail, resendVerificationEmail);
 
 export default authRouter;
