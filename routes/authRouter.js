@@ -5,9 +5,11 @@ import {
   logout,
   current,
   updateSubscription,
+  updateAvatar,
 } from "../controllers/authControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import authenticate from "../helpers/authenticate.js";
+import upload from "../helpers/upload.js";
 import { registerSchema, loginSchema, updateSubscriptionSchema } from "../schemas/authSchemas.js";
 
 const authRouter = express.Router();
@@ -30,9 +32,13 @@ const authRouter = express.Router();
  *         subscription:
  *           type: string
  *           enum: [starter, pro, business]
+ *         avatarURL:
+ *           type: string
+ *           description: URL аватара користувача
  *       example:
  *         email: example@example.com
  *         subscription: starter
+ *         avatarURL: //www.gravatar.com/avatar/5658ffccee7f0ebfda2b226238b1eb6e?s=200&r=pg&d=mp
  *     RegisterRequest:
  *       type: object
  *       required:
@@ -247,5 +253,52 @@ authRouter.get("/current", authenticate, current);
  *               $ref: '#/components/schemas/Error'
  */
 authRouter.patch("/subscription", authenticate, validateBody(updateSubscriptionSchema), updateSubscription);
+
+/**
+ * @swagger
+ * /api/auth/avatars:
+ *   patch:
+ *     summary: Оновити аватар користувача
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Файл зображення (JPEG, PNG, GIF, max 5MB)
+ *     responses:
+ *       200:
+ *         description: Аватар оновлено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 avatarURL:
+ *                   type: string
+ *                   example: /avatars/123.jpg
+ *       400:
+ *         description: Файл не надано або невірний формат
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Не авторизовано
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+authRouter.patch("/avatars", authenticate, upload.single("avatar"), updateAvatar);
 
 export default authRouter;

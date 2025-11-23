@@ -1,6 +1,6 @@
 # goit-node-rest-api
 
-Домашнє завдання. Тема 7. Аутентифікація та авторизація
+Домашнє завдання. Тема 9. Робота з файлами та тестування додатків
 
 ## Встановлення та запуск
 
@@ -33,6 +33,11 @@ npm run dev
 **Продакшн режим:**
 ```bash
 npm start
+```
+
+**Запуск тестів:**
+```bash
+npm test
 ```
 
 Сервер буде доступний за адресою: `http://localhost:3000`
@@ -184,6 +189,37 @@ Authorization: Bearer <token>
 ```
 
 **Можливі значення subscription:** `starter`, `pro`, `business`
+
+#### 6. Оновлення аватара (Optional)
+
+**PATCH** `/api/auth/avatars`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Body (multipart/form-data):**
+- `avatar` - файл зображення (JPEG, PNG, GIF, max 5MB)
+
+**Відповідь (200):**
+```json
+{
+  "avatarURL": "/avatars/123.jpg"
+}
+```
+
+**Відповідь (400):**
+```json
+{
+  "message": "File is required"
+}
+```
+
+**Примітка:** 
+- При реєстрації автоматично генерується gravatar
+- Завантажене зображення зберігається в `public/avatars/`
+- Доступ до аватара: `http://localhost:3000/avatars/{userId}.jpg`
 
 ---
 
@@ -546,10 +582,13 @@ goit-node-rest-api/
 ├── helpers/
 │   ├── authenticate.js         # Міддлвар перевірки JWT токенів
 │   ├── HttpError.js            # Функція для створення HTTP помилок
+│   ├── upload.js               # Конфігурація Multer для завантаження файлів
 │   └── validateBody.js         # Міддлвар для валідації body
 ├── models/
 │   ├── Contact.js              # Sequelize модель Contact з owner
-│   └── User.js                 # Sequelize модель User
+│   └── User.js                 # Sequelize модель User з avatarURL
+├── public/
+│   └── avatars/                # Папка для збереження аватарів
 ├── routes/
 │   ├── authRouter.js           # Роути автентифікації
 │   └── contactsRouter.js       # Роути API контактів (захищені)
@@ -559,6 +598,7 @@ goit-node-rest-api/
 ├── services/
 │   ├── authServices.js         # Бізнес-логіка автентифікації
 │   └── contactsServices.js     # Бізнес-логіка роботи з контактами
+├── temp/                       # Тимчасова папка для завантажених файлів
 ├── .env                        # Змінні оточення (не в git)
 ├── app.js                      # Точка входу додатку
 └── package.json                # Конфігурація проекту
@@ -572,13 +612,29 @@ goit-node-rest-api/
 - **Sequelize** - ORM для роботи з базою даних
 - **JWT (jsonwebtoken)** - автентифікація через токени
 - **bcryptjs** - хешування паролів
+- **Multer** - завантаження файлів
+- **Gravatar** - генерація аватарів
 - **Joi** - валідація даних
 - **dotenv** - управління змінними оточення
 - **Morgan** - логування HTTP запитів
 - **CORS** - підтримка cross-origin запитів
 - **Swagger** - автоматична генерація API документації
+- **Jest** - тестування додатку
+- **Supertest** - тестування HTTP запитів
 
 ## Функціонал
+
+### ✅ Homework #5 - File Upload & Avatars
+- Завантаження та оновлення аватарів користувачів (Multer)
+- Генерація аватарів через Gravatar при реєстрації
+- Роздача статичних файлів з папки public
+- Валідація типу та розміру файлів (max 5MB, JPEG/PNG/GIF)
+- Унікальні імена файлів для кожного користувача
+- **Додаткове завдання:**
+  - ✅ Unit тести для контролера login (Jest + Supertest)
+  - Тестування успішної автентифікації (статус 200, token, user object)
+  - Тестування помилок автентифікації (401)
+  - Всі тести успішно пройдені ✅
 
 ### ✅ Homework #4 - Authentication & Authorization
 - Реєстрація користувачів з хешуванням паролів (bcrypt)
@@ -609,6 +665,34 @@ goit-node-rest-api/
 - Node.js версії LTS або новіше
 - PostgreSQL 12 або новіше
 - npm або yarn
+
+## Тестування
+
+Проект містить unit тести для автентифікації, написані з використанням **Jest** та **Supertest**.
+
+### Запуск тестів
+
+```bash
+npm test
+```
+
+### Що тестується
+
+**Контролер login (`POST /api/auth/login`):**
+- ✅ Повертає статус код 200 при успішному вході
+- ✅ Повертає токен у відповіді
+- ✅ Повертає об'єкт user з полями email і subscription типу String
+- ✅ Повертає 401 при неправильних даних
+- ✅ Повертає 401 для неіснуючого користувача
+
+### Результати тестування
+
+```
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+```
+
+Всі тести успішно пройдені! ✅
 
 ## Автор
 
